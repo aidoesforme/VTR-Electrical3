@@ -1,0 +1,47 @@
+<?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php'; // Make sure this path is correct
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $name = isset($_POST['name']) ? htmlspecialchars(trim($_POST['name'])) : '';
+    $email = isset($_POST['email']) ? htmlspecialchars(trim($_POST['email'])) : '';
+    $date = isset($_POST['date']) ? htmlspecialchars(trim($_POST['date'])) : '';
+    $message = isset($_POST['message']) ? htmlspecialchars(trim($_POST['message'])) : '';
+
+    if (!$name || !$email || !$date || !$message) {
+        echo "All fields are required.";
+        exit;
+    }
+
+    $mail = new PHPMailer(true);
+
+    try {
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'your@gmail.com';          // 🔒 your Gmail address
+        $mail->Password   = 'your_app_password';       // 🔒 App password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        $mail->setFrom('your@gmail.com', 'Appointment Bot');
+        $mail->addAddress('bradleypullen2005@gmail.com', 'Bradley');
+        $mail->addReplyTo($email, $name);
+
+        $mail->isHTML(false);
+        $mail->Subject = 'New Appointment Booking';
+        $mail->Body    = "You received a new appointment request:\n\n" .
+                         "Name: $name\n" .
+                         "Email: $email\n" .
+                         "Date: $date\n" .
+                         "Message: $message\n";
+
+        $mail->send();
+        echo "Appointment sent successfully.";
+    } catch (Exception $e) {
+        echo "Email could not be sent. Error: {$mail->ErrorInfo}";
+    }
+}
+?>
